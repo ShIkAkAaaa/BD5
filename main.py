@@ -63,20 +63,25 @@ def add_phone(cur, clients_id, phone):
 
 
 def change_client(cur, client_id, first_name=None, last_name=None, email=None, phone=None):
-    cur.execute("""
-        SELECT id FROM clients
-        """);
-    list_clients = cur.fetchall()
-
-    if client_id in list_clients:
+    if first_name is not None:
         cur.execute("""
-            UPDATE course SET first_name=%s, 
-                              last_name=%s,
-                              email=%s,
-                              phone=%s
-            """, (first_name, last_name, email, phone))
-    else:
-        print("Вы указали неверного пользователя")
+            UPDATE clients SET first_name=%s WHERE id=%s
+            """, (first_name, client_id))
+    if last_name is not None:
+        cur.execute("""
+            UPDATE clients SET last_name=%s WHERE id=%s
+            """, (last_name, client_id))
+    if email is not None:
+        cur.execute("""
+            UPDATE clients SET email=%s WHERE id=%s
+            """, (email, client_id))
+    if phone is not None:
+        add_phone(conn, cur, client_id, phone)
+
+    cur.execute("""
+        SELECT * FROM clients;
+        """)
+    cur.fetchall()
 
 
 def delete_phone(cur, clients_id, phone):
@@ -113,7 +118,7 @@ def find_client(cur, first_name=None, last_name=None, email=None, phone=None):
     else:
         cur.execute("""
             SELECT id FROM clients 
-            WHERE first_name=%s OR last_name=%s OR email=%s;
+            WHERE first_name=%s AND last_name=%s AND email=%s;
             """, (first_name, last_name, email))
     print(cur.fetchall())
 
@@ -153,7 +158,7 @@ if __name__ == '__main__':
             change_client(cur, 1, 'Артём')
             change_client(cur, 2, None, 'Гандебул')
             change_client(cur, 3, None, None, 'maber@mail.com')
-            change_client(cur, 2, None, None, None, '7-999-225-11-11')
+            change_client(cur, 2, None,  '7-999-225-11-11')
 
             all_clients(cur)
 
@@ -170,3 +175,5 @@ if __name__ == '__main__':
             delete_client(cur, 5)
 
             all_clients(cur)
+
+conn.close()
